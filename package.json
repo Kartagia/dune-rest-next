@@ -19,6 +19,7 @@
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
     "chai": "^4.3.10",
+    "cross-env": "^7.0.3",
     "eslint": "latest",
     "eslint-config-next": "latest",
     "mocha": "^10.2.0",
