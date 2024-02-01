@@ -230,14 +230,16 @@ export function createTalentTemplate(talentName) {
 }
 
 /**
- * 
+ * A constructor creating a talent template.
+ * @constructor
  * @template [Type=undefined] The type of the value used to generate the talent.
  * @param {Partial<Talent>} baseTalent The base talent.
  * @param {(value: Type) => boolean} [validator] The validator of the value.
  * @param {(value: Type) => Talent} [instantiator] The function creating the instance. 
- * @returns 
+ * @returns {TalentTemplate} The created talent template.
+ * @throws {RangeError} The base talent lacks all required fields.
  */
-export function createTalentTemplate(baseTalent, validator = (() => true), instantiator = undefined) {
+export function TalentTemplate(baseTalent, validator = (() => true), instantiator = undefined) {
     if (baseTalent?.name) {
         // The talent has a name.
         chooserRegExp.exec()
