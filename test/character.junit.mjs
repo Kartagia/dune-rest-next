@@ -2,7 +2,7 @@
 
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { assertInteger } from "../src/model/character.mjs";
+import { assertInteger } from "../src/model/integer.mjs";
 
 /**
  * @module test/model/charcter/junit
