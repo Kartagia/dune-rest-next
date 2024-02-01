@@ -1,6 +1,7 @@
 
 import { describe, it } from "mocha";
-import { AssertionError, expect } from "chai";
+import { expect } from "chai";
+import { AssertionError } from "assert";
 import { isInteger, toInteger, assertInteger } from "../src/model/character.mjs";
 
 describe("Testing Integer", () => {
@@ -42,8 +43,8 @@ describe("Testing Integer", () => {
         })
         invalidIntegers.forEach( (tested) => {
             it(`Invalid integer ${tested}`, () => {
-                expect(() => { assertInteger(tested) }).to.throw(AssertionError);
-            });
+                expect( () => {assertInteger(tested);}).to.throw(AssertionError);
+            })
         })
 
     })
