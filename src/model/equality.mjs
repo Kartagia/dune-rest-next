@@ -86,12 +86,12 @@ export function isIterable(value) {
  * @param {Set<Type>|SetLike<Type>} compared The compared set.
  * @param {Set<Type>|SetLike<Type>} comparee The set compared to.
  * @param {(a: Set<Type>, b: Set<Type>) => boolean} [equalityFn] The equality function.
- * Defaults to the strict equality (operator "===").
+ * Defaults to the same value zero the JavaScript uses as default for Sets.
  * @returns {boolean} True, if and only if the compared is equal to comparee with the comparison
  * function.
  * @throws {Error} Either compared or comparee had an element incompatible with equality function.
  */
-export function equalSets(compared, comparee, equalityFn = strictEquality) {
+export function equalSets(compared, comparee, equalityFn = sameValueZero) {
     if (!(isSetLike(compared) && isSetLike(comparee))) {
         // Only setlikes can be equals with sets equality.
         return false;
