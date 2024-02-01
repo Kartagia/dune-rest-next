@@ -575,9 +575,9 @@ export class DuneCharacter {
                     const index = DuneCharacter.checkDuplicity(subGroupMembers.slice(0, testedIndex), tested,
                         identityFn, identityEqualityFn, true);
 
-                    return new AssertionError(`Duplicate ${subGroupName} at ${index} and ${testedIndex}`);
+                    return new AssertionError({ message: `Duplicate ${subGroupName} at ${index} and ${testedIndex}`});
                 } else if (DuneCharacter.checkDuplicity([tested], newMember, identityFn, identityEqualityFn)) {
-                    return new AssertionError(`Duplicate ${subGroupName} at ${testedIndex}`);
+                    return new AssertionError({ message: `Duplicate ${subGroupName} at ${testedIndex}` });
                 }
                 return undefined;
             })();
