@@ -53,9 +53,30 @@ export function toInteger(value) {
  */
 export function assertInteger(value) {
     if (!isInteger(value)) {
-        throw new AssertionError({message: "Cannot conver the value to a safe integer"});
+        throw new AssertionError({ message: "Cannot conver the value to a safe integer" });
     }
 }
+
+
+/**
+ * Regular expression matching to a single name word.
+ */
+const nameWordRegex = new RegExp("(?:\\p{Lu}\\p{Ll}+(?:[\\p{Pd}`'´]\\p{L}\\p{Ll}+)*)", "u");
+
+/**
+ * Regular expression matching to one or more name words joined with either dash or space.
+ */
+const namesWordRegex = new RegExp("(?:" +
+    nameWordRegex.source + "(?:[\\p{Pd}\\p{Zs}]" +
+    nameWordRegex.source + ")" + ")", "u")
+
+/**
+ * Regular expression matching to a multi word name with quoted parts. 
+ * Reserves the capturing group "quot", which will contain the quote of hte last 
+ * name part.
+ */
+const nameRegEx = new RegExp("^" + nameWordRegex.source +
+    "(?:[\\p{Zs}](?<quot>[\"']?)" + namesWordRegex.source + "\k<quot>)*" + "$", "u");
 
 /**
  * The interface of a named objects. The named objects
@@ -63,6 +84,60 @@ export function assertInteger(value) {
  * @typedef {Object} Named 
  * @property {string} name The unique name of the object.
  */
+export function isNamed(value) {
+    if (value == null) return false;
+    try {
+        const strVal = "" + value;
+        return nameRegEx.test(strVal);
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * Regular expression matching to a placeholder. 
+ */
+const placeholderRegex = new RegExp("(?:\\[\\p{Lu}\\p{Ll}*\\p{N}*\\])", "u");
+/**
+ * Regular expression matching to a placeholder, and capturing the placeholder name and index into groups
+ * "name" and "index."
+ */
+const capturingPlaceholderRegex = new RegExp("(?:\\[" + "(?<name>\\p{Lu}\\p{Ll}*)" + "(?<index>\\p{N}+)?" + "\\])", "gu");
+/**
+ * Regular expression matching to a single name word or a placeholder designation.
+ */
+const nameWordOrPlaceholderRegex = new RegExp("(?:" + nameWordRegex.source + "|" + placeholderRegex.source + ")", "u");
+
+
+/**
+ * Regular expression matching to one or more name words joined with either dash or space.
+ */
+const nameWordsOrPlaceholdersWordRegex = new RegExp("(?:" +
+    nameWordOrPlaceholderRegex.source + "(?:[\\p{Pd}\\p{Zs}]" +
+    nameWordOrPlaceholderRegex.source + ")" + ")", "u")
+
+/**
+ * Regular expression matching to a multi word name with quoted parts. 
+ * Reserves the capturing group "quot", which will contain the quote of hte last 
+ * name part.
+ */
+const nameWithPlaceholdersRegEx = new RegExp("^" + nameWordOrPlaceholderRegex.source +
+    "(?:[\\p{Zs}](?<quot>[\"']?)" + nameWordsOrPlaceholdersWordRegex.source + "\k<quot>)*" + "$", "u");
+
+/**
+ * Is the given value a named with placeholders.
+ * @param {*} value The tested value. 
+ */
+export function isNamedWithPlaceholders(value) {
+    if (value == null) return false;
+    try {
+        const strVal = "" + value;
+        return nameWithPlaceholdersRegEx.test(strVal);
+    } catch (error) {
+        return false;
+    }
+
+}
 
 /**
  * The interface of a described objects.
@@ -71,9 +146,32 @@ export function assertInteger(value) {
  */
 
 /**
+ * Is a value described. 
+ * A value is Described, if it 
+ * does have property "description" with non-empty string value.
+ * @param {*} value The tested value.
+ * @returns True, if and only if the value is optionally described. 
+ */
+export function isDescribed(value) {
+    return value instanceof Object && "description" in value && 
+    ( typeof value.description === "string" || value.description instanceof String) &&
+    (""+value.description).length > 0;
+}
+
+/**
  * The interface of an object with may have description.
  * @typedef {Partial<Described>} OptionallyDescribed
  */
+
+/**
+ * Is a value optionally described.The value is optionally described, if it 
+ * does not have property "description", or it is Described.
+ * @param {*} value The tested value.
+ * @returns True, if and only if the value is optionally described. 
+ */
+export function isOptionallyDescribed(value) {
+    return value instanceof Object && (!("description" in value) || isDescribed(value));
+}
 
 /**
  * The interface of a counted objects.
@@ -99,7 +197,7 @@ export function assertInteger(value) {
  */
 export function isTrait(tested) {
     return typeof tested === "object" && "isTrait" in tested && tested.isTrait &&
-      isNamed(tested) && ( !("description" in tested) || typeof ("" + tested) === "string" && ("" + tested).length > 0);
+        isNamed(tested) && isOptionallyDescribed(tested);
 }
 
 /**
@@ -122,7 +220,7 @@ export function isTrait(tested) {
  */
 export function isTalent(tested) {
     return typeof tested === "object" && "isTalent" in tested && tested.isTalent &&
-      isNamed(tested) && isDescribed(tested) && ( !("unique" in tested) || (typeof tested.unique === "boolean"));
+        isNamed(tested) && isDescribed(tested) && (!("unique" in tested) || (typeof tested.unique === "boolean"));
 }
 
 
@@ -149,7 +247,12 @@ export function isTalent(tested) {
  */
 export function createTalentTemplate(talentName) {
 
-    const chooserRegExp = new RegExp("\\[(?<name>\\p{Lu}\\p{Ll}*)(?<index>\\p{N}+)?\\]", "ug");
+    /**
+     * A new copy of the capturing placeholder regex to ensure the updates during execution
+     * does not cause unwanted side effects.
+     * @type {RegExp}
+     */
+    const chooserRegExp = new RegExp(capturingPlaceholderRegex.source, "ug");
 
     /**
      * The gate keeper list.
@@ -209,14 +312,14 @@ export function createTalentTemplate(talentName) {
 
         createInstance(value) {
             if (this.validInstantiator(value)) {
-                const name = replacementFunctions.reduce( (result, replacementFn, index) => {
+                const name = replacementFunctions.reduce((result, replacementFn, index) => {
                     return result.replaceAll(new RegExp(`\\[${placeholderNames[index]}\\]`, "ug"), replacementFn(value));
                 }, talentName);
                 return {
                     name,
-                    description: replacementFunctions.reduce( (result, replacementFn, index) => {
+                    description: replacementFunctions.reduce((result, replacementFn, index) => {
                         return result.replaceAll(new RegExp(`\\[${placeholderNames[index]}\\]`, "ug"), replacementFn(value));
-                    }, description ?? `Talent ${name}.`), 
+                    }, description ?? `Talent ${name}.`),
                     count: 1,
                     get isTalent() { return true },
                     unique: true
@@ -319,10 +422,10 @@ export function createTalent(template, value) {
  */
 export function isAsset(tested) {
     return isTrait(tested) && "isAsset" in tested && tested.isAsset
-    && ( !("quality" in tested) || isInteger(tested.quality) ) 
-    && ["tanglible", "temporary", "remserved", "transferrable"].every( (property) => ( 
-        !(property in tested) || typeof tested[property] === "boolean") )
-    && isNamed(tested) && isDescribed(tested);
+        && (!("quality" in tested) || isInteger(tested.quality))
+        && ["tanglible", "temporary", "remserved", "transferrable"].every((property) => (
+            !(property in tested) || typeof tested[property] === "boolean"))
+        && isNamed(tested) && isDescribed(tested);
 }
 
 
@@ -424,10 +527,10 @@ export function equalAssets(a, b) {
  */
 
 export function isDrive(tested) {
-    return isNamed(tested) && "isDrive" in tested && tested.isDrive === true 
-    && ["challenged"].every( (prop) => ( !(prop in tested) || typeof tested === "boolean"))
-    && ["value"].every( (prop) => ( !(prop in tested) || isInteger(prop.value) ))
-    && ["statement"].every( (prop) => ( !(prop in tested) || typeof tested[prop] === "string" && tested[prop].length > 0) )
+    return isNamed(tested) && "isDrive" in tested && tested.isDrive === true
+        && ["challenged"].every((prop) => (!(prop in tested) || typeof tested === "boolean"))
+        && ["value"].every((prop) => (!(prop in tested) || isInteger(prop.value)))
+        && ["statement"].every((prop) => (!(prop in tested) || typeof tested[prop] === "string" && tested[prop].length > 0))
 }
 
 
@@ -575,7 +678,7 @@ export class DuneCharacter {
                     const index = DuneCharacter.checkDuplicity(subGroupMembers.slice(0, testedIndex), tested,
                         identityFn, identityEqualityFn, true);
 
-                    return new AssertionError({ message: `Duplicate ${subGroupName} at ${index} and ${testedIndex}`});
+                    return new AssertionError({ message: `Duplicate ${subGroupName} at ${index} and ${testedIndex}` });
                 } else if (DuneCharacter.checkDuplicity([tested], newMember, identityFn, identityEqualityFn)) {
                     return new AssertionError({ message: `Duplicate ${subGroupName} at ${testedIndex}` });
                 }
