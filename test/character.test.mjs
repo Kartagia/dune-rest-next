@@ -9,27 +9,27 @@ describe("Testing Integer", () => {
     describe("Gatekeeper isInteger", () => {
         validIntegers.forEach( (tested) => {
             it(`Valid integer ${tested}`, () => {
-                expect(isInteger(value)).true;
+                expect(isInteger(tested)).true;
             });
         })
         invalidIntegers.forEach( (tested) => {
             it(`Invalid integer ${tested}`, () => {
-                expect(isInteger(value)).false;
+                expect(isInteger(tested)).false;
             });
         })
     })
     describe("Conveter toInteger", () => {
         validIntegers.forEach( (tested) => {
             it(`Valid integer ${tested}`, () => {
-                expect(() => { toInteger(value) }).not.throw();
-                const result = toInteger(value);
+                expect(() => { toInteger(tested) }).not.throw();
+                const result = toInteger(tested);
                 expect(isInteger(result)).true;
-                expect(result).to.eql(+value);
+                expect(result).to.eql(+tested);
             });
         })
         invalidIntegers.forEach( (tested) => {
             it(`Invalid integer ${tested}`, () => {
-                expect(() => { toInteger(value) }).to.throw(RangeError);
+                expect(() => { toInteger(tested) }).to.throw(TypeError);
             });
         })
 
@@ -37,12 +37,12 @@ describe("Testing Integer", () => {
     describe("Assertion assertInteger", () => {
         validIntegers.forEach( (tested) => {
             it(`Valid integer ${tested}`, () => {
-                expect(() => { assertInteger(value) }).not.throw();
+                expect(() => { assertInteger(tested) }).not.throw();
             });
         })
         invalidIntegers.forEach( (tested) => {
             it(`Invalid integer ${tested}`, () => {
-                expect(() => { assertInteger(value) }).to.throw(AssertionError);
+                expect(() => { assertInteger(tested) }).to.throw(AssertionError);
             });
         })
 
