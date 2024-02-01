@@ -6,7 +6,6 @@
 
 import { AssertionError } from "assert";
 
-
 /**
  * An integer which is a safe integer.
  * @typedef {number & {__isInteger: true}} Integer
@@ -54,7 +53,7 @@ export function toInteger(value) {
  */
 export function assertInteger(value) {
     if (!isInteger(value)) {
-        throw new AssertionError("Cannot conver the value to a safe integer");
+        throw new AssertionError({message: "Cannot conver the value to a safe integer"});
     }
 }
 
