@@ -5,58 +5,8 @@
  */
 
 import { AssertionError } from "assert";
-
-/**
- * An integer which is a safe integer.
- * @typedef {number & {__isInteger: true}} Integer
- */
-
-/**
- * A number which is a safe integer.
- * @param {*} value The tested value.
- * @returns {boolean} True, if and only if the value is a safe integer.
- */
-export function isInteger(value) {
-    try {
-        switch (typeof value) {
-            case "string":
-            case "number":
-                return typeof (+value) === "number" && Number.isSafeInteger(+value) == true;
-            default:
-                return false;
-        }
-
-    } catch (error) {
-        // NOP:
-    }
-    return false;
-}
-
-/**
- * Convert a value to a safe integer.
- * @param {*} value The converted value.
- * @returns {Integer} The result of the conversion.
- * @throws {TypeError} The value is not suitable for a save itneger.
- */
-export function toInteger(value) {
-    if (isInteger(value)) {
-        return (+value);
-    } else {
-        throw new TypeError("THe value is not a safe integer");
-    }
-}
-
-/***
- * Assertion checking that a value is a number.
- * @param {*} value The tested value.
- * @throws {AssertionError} The value is not an integer.
- */
-export function assertInteger(value) {
-    if (!isInteger(value)) {
-        throw new AssertionError({ message: "Cannot conver the value to a safe integer" });
-    }
-}
-
+import { equalSets, equalArrays } from "./equality.mjs";
+import { isInteger } from "./integer.mjs";
 
 /**
  * Regular expression matching to a single name word.
@@ -153,9 +103,9 @@ export function isNamedWithPlaceholders(value) {
  * @returns True, if and only if the value is optionally described. 
  */
 export function isDescribed(value) {
-    return value instanceof Object && "description" in value && 
-    ( typeof value.description === "string" || value.description instanceof String) &&
-    (""+value.description).length > 0;
+    return value instanceof Object && "description" in value &&
+        (typeof value.description === "string" || value.description instanceof String) &&
+        ("" + value.description).length > 0;
 }
 
 /**
@@ -428,54 +378,18 @@ export function isAsset(tested) {
         && isNamed(tested) && isDescribed(tested);
 }
 
-
 /**
- * Check euquality of the arrays.
- * @template Type The type of the array.
- * @param {Array<Type>} a The first array.
- * @param {Array<Type>} b The second array:
- * @param {(a: Type, b: Type) => boolean} [equalityFn] The equality function of the elements.
- * Defaults to the equivalence operator "===".
+ * Test equality of the eassets.
+ * @param {Asset} compared Compared value.
+ * @param {Asset} comparee The value compared to.
+ * @return {boolean} True, if and only if the assets are equals.
  */
-export function equalArrays(a, b, equalityFn = ((a, b) => (a === b))) {
-    return (Array.isArray(a) && Array.isArray(b) && a.length === b.length &&
-        a.every((_, index) => (equalityFn(a[index], b[index]))));
-}
-
-/**
- * Find first index of element within array using given equality function.
- * @template Type The type of the array.
- * @param {Array<Type>} elements The tested array. 
- * @param {Type} seeked The sought element.
- * @param {(a: Type, b: Type) => boolean} [equalityFn] The equality function of the elements.
- * Defaults to the equivalence operator "===".
- * @returns {Type|undefined} Find the first member of elements equivalent ot the seeked, or
- * an undefined value, if none exists.
- */
-export function find(elements, seeked, equalityFn = ((a, b) => (a === b))) {
-    if (isArray(elements)) {
-        return elements.find((member) => (equalityFn(member, seeked)));
-    } else {
-        return -1;
-    }
-}
-
-
-/**
- * Find first index of element within array using given equality function.
- * @template Type The type of the array.
- * @param {Array<Type>} elements The tested array. 
- * @param {Type} seeked The sought element.
- * @param {(a: Type, b: Type) => boolean} [equalityFn] The equality function of the elements.
- * Defaults to the equivalence operator "===".
- * @returns 
- */
-export function firstIndex(elements, seeked, equalityFn = ((a, b) => (a === b))) {
-    if (isArray(elements)) {
-        return elements.firstIndex((member) => (equalityFn(member, seeked)));
-    } else {
-        return -1;
-    }
+export function equalAssets(compared, comparee) {
+    return isNamed(compared) && isNamed(comparee) &&
+        compared.anme == comparee.name && (comparee.quality ?? 0) === (compared.quality ?? 0)
+        && (compared.temporary ?? false) === (comparee.temporary ?? false)
+        && (compared.tanglible ?? false) === (comparee.tanglible ?? false)
+        && equalSets(new Set(compared.types ?? []), new Set(comparee.types ?? []));
 }
 
 /**
