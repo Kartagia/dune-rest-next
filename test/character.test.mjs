@@ -1,7 +1,7 @@
 
 import { describe, it } from "mocha";
 import { AssertionError, expect } from "chai";
-import { isInteger } from "../src/model/character.mjs";
+import { isInteger, toInteger, assertInteger } from "../src/model/character.mjs";
 
 describe("Testing Integer", () => {
     const validIntegers = [Number.MIN_SAFE_INTEGER, -(2**32), -(2**32)-1, -256, -255, -1, "-1", 0, "0", 1, "1", 255, 256, (2**32), (2**32)-1, Number.MAX_SAFE_INTEGER];
@@ -37,12 +37,12 @@ describe("Testing Integer", () => {
     describe("Assertion assertInteger", () => {
         validIntegers.forEach( (tested) => {
             it(`Valid integer ${tested}`, () => {
-                expect(() => { toInteger(value) }).not.throw();
+                expect(() => { assertInteger(value) }).not.throw();
             });
         })
         invalidIntegers.forEach( (tested) => {
             it(`Invalid integer ${tested}`, () => {
-                expect(() => { toInteger(value) }).to.throw(AssertionError);
+                expect(() => { assertInteger(value) }).to.throw(AssertionError);
             });
         })
 
