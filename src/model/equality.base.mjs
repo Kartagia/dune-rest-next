@@ -85,10 +85,10 @@ export function isFunction(tested, options = {}) {
     if (typeof tested !== "function") {
         return false;
     }
-    if (options.minParams != null && tested.length < options.minParams) {
+    if (options.minParams != null && tested.length <= options.minParams) {
         return false;
     }
-    if (options.maxParams != null && tested.length > options.maxParams) {
+    if (options.maxParams != null && tested.length >= options.maxParams) {
         return false;
     }
     return true;
