@@ -1,14 +1,8 @@
 
 
-import { isInteger } from "./integer.mjs";
+import { strictEquality, sameValueZero } from "./equality.base.mjs";
 import { isSetLike } from "./setlike.mjs";
 
-/**
- * @typedef {Object} FunctionTestOptions
- * @property {import("./integer.mjs").Integer} [minParams=0] The minimum number of parameters.
- * @property {import("./integer.mjs").Integer?} [maxParams=undefined] THe maximum number of parameters.
- * An undefined value indicates the parameter count does not have upper boundary.
- */
 
 /**
  * Predicate testing a function.
@@ -64,69 +58,6 @@ export function implementsInterface(value, options = {}) {
 }
 
 /**
- * The default equality comparison using equlaity.
- * @template Type
- * @param {Type} compared The compared valeu.
- * @param {Type} comparee The value compared to.
- * @returns {boolean} True, if and only if the a is equal to b.
- * @throws {Error} Either a or b is not comparable with each other.
- */
-export function equality(compared, comparee) {
-    return compared == comparee;
-}
-/**
- * The strict equality comparison using string equlaity.
- * @template Type
- * @param {Type} compared The compared valeu.
- * @param {Type} comparee The value compared to.
- * @returns {boolean} True, if and only if the a is equal to b.
- * @throws {Error} Either a or b is not comparable with each other.
- */
-export function strictEquality(compared, comparee) {
-    return (compared === comparee);
-}
-
-/**
- * The same value zero equality algorith.
- * @param {*} compared The compared value.
- * @param {*} comparee The value compared with.
- * @returns {boolean} True, if and only if the compared is the same value
- * as comparee with -0 and 0 handled as same value, and NaN equal to NaN.
- */
-export function sameValueZero(compared, comparee) {
-    if (typeof compared !== typeof comparee) {
-        return false;
-    } else if (compared == null) {
-        // Compared was either null or undefined.
-        return true;
-    } else if (typeof compared === "number") {
-        return Number.sameValueZero(compared, comparee);
-    } else {
-        return Object.is(compared, comparee);
-    }
-}
-
-/**
- * The same value equality algorith.
- * @param {*} compared The compared value.
- * @param {*} comparee The value compared with.
- * @returns {boolean} True, if and only if the compared is the same value
- * as comparee with -0 and 0 handled as different numbers, and NaN equal to NaN.
- */
-export function sameValue(compared, comparee) {
-    if (typeof compared !== typeof comparee) {
-        return false;
-    } else if (compared == null) {
-        // Compared was either null or undefined.
-        return true;
-    } else if (typeof compared === "number") {
-        return Number.sameValue(compared, comparee);
-    } else {
-        return Object.is(compared, comparee);
-    }
-}
-
-/**
  * Is the value iterator.
  * @template Type The value type of the iteartor.
  * @template [ReturnType=any] The type of the return value.
@@ -150,25 +81,6 @@ export function isIterable(value) {
 }
 
 /**
- * Test if the valeu is a function fitting the given function options.
- * @template Type
- * @param {Function} tested The tested value.
- * @param {FunctionTestOptions} options The options of the funciton test.
- */
-export function isFunction(tested, options = {}) {
-    if (typeof tested !== "function") {
-        return false;
-    }
-    if (options.minParams != null && tested.length < options.minParams) {
-        return false;
-    }
-    if (options.maxParams != null && tested.length > options.maxParams) {
-        return false;
-    }
-    return true;
-}
-
-/**
  * Check equality of the sets.
  * @template Type
  * @param {Set<Type>|SetLike<Type>} compared The compared set.
@@ -179,7 +91,6 @@ export function isFunction(tested, options = {}) {
  * function.
  * @throws {Error} Either compared or comparee had an element incompatible with equality function.
  */
-
 export function equalSets(compared, comparee, equalityFn = strictEquality) {
     if (!(isSetLike(compared) && isSetLike(comparee))) {
         // Only setlikes can be equals with sets equality.
@@ -198,7 +109,7 @@ export function equalSets(compared, comparee, equalityFn = strictEquality) {
 }
 
 /**
- *
+ * Test equality of the maps.
  * @template Key the type of keys.
  * @template Value The type of values
  * @param {Map<Key, Value>} compared  The compared map.
@@ -208,7 +119,7 @@ export function equalSets(compared, comparee, equalityFn = strictEquality) {
  * @returns {boolean} True, if an donly if the compared and comparee are have same key-value pairs, but
  * the order may differ.
  */
-export function equalMaps(compared, comparee, keyEqualityFn = sameValueZeroEquality, valueEqualityFn = strictEquality) {
+export function equalMaps(compared, comparee, keyEqualityFn = sameValueZero, valueEqualityFn = strictEquality) {
     return equalSets(compared, comparee, keyEqualityFn) &&
         ([...compared.keys()].every((key) => (valueEqualityFn(compared.get(key), comparee.get(key)))));
 }
@@ -220,9 +131,6 @@ export function equalMaps(compared, comparee, keyEqualityFn = sameValueZeroEqual
  * @param {(a: Type, b: Type) => boolean} [equalityFn] The equality function of the elements.
  * Defaults to the strict equality (operator "===").
  */
-
-
-
 export function equalArrays(a, b, equalityFn = strictEquality) {
     return (Array.isArray(a) && Array.isArray(b) && a.length === b.length &&
         a.every((_, index) => (equalityFn(a[index], b[index]))));
@@ -237,7 +145,6 @@ export function equalArrays(a, b, equalityFn = strictEquality) {
  * @returns {Type|undefined} Find the first member of elements equivalent ot the seeked, or
  * an undefined value, if none exists.
  */
-
 export function find(elements, seeked, equalityFn = strictEquality) {
     if (isArray(elements)) {
         return elements.find((member) => (equalityFn(member, seeked)));
@@ -254,8 +161,6 @@ export function find(elements, seeked, equalityFn = strictEquality) {
  * Defaults to the strict equality (operator "===").
  * @returns
  */
-
-
 export function firstIndex(elements, seeked, equalityFn = ((a, b) => (a === b))) {
     if (isArray(elements)) {
         return elements.firstIndex((member) => (equalityFn(member, seeked)));

@@ -1,4 +1,4 @@
-import { isFunction } from "./equality.mjs";
+import { isFunction } from "./equality.base.mjs";
 
 /**
  * @template Type The value type.
