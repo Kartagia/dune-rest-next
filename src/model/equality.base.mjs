@@ -6,12 +6,21 @@
  */
 
 /**
+ * The function determining equality of two values.
+ * @template [Type=any]
+ * @callback EqualityFunction
+ * @param {Type} compared
+ * @param {Type} comparee
+ * @returns {boolean} True, if and only if the compared is equal to comparee.
+ */
+
+/**
  * The default equality comparison using equlaity.
- * @template Type
+ * @template [Type=any]
+ * @implements {EqualityFunction<Type>}
  * @param {Type} compared The compared valeu.
  * @param {Type} comparee The value compared to.
  * @returns {boolean} True, if and only if the a is equal to b.
- * @throws {Error} Either a or b is not comparable with each other.
  */
 
 export function equality(compared, comparee) {
@@ -19,19 +28,19 @@ export function equality(compared, comparee) {
 }
 /**
  * The strict equality comparison using string equlaity.
- * @template Type
+ * @template [Type=any]
  * @param {Type} compared The compared valeu.
  * @param {Type} comparee The value compared to.
- * @returns {boolean} True, if and only if the a is equal to b.
- * @throws {Error} Either a or b is not comparable with each other.
+ * @returns {boolean} True, if and only if the compared is equal to comparee.
  */
 export function strictEquality(compared, comparee) {
     return (compared === comparee);
 }
 /**
  * The same value zero equality algorith.
- * @param {*} compared The compared value.
- * @param {*} comparee The value compared with.
+ * @template [Type=any]
+ * @param {Type} compared The compared value.
+ * @param {Type} comparee The value compared with.
  * @returns {boolean} True, if and only if the compared is the same value
  * as comparee with -0 and 0 handled as same value, and NaN equal to NaN.
  */
@@ -50,10 +59,11 @@ export function sameValueZero(compared, comparee) {
 }
 /**
  * The same value equality algorith.
- * @param {*} compared The compared value.
- * @param {*} comparee The value compared with.
+ * @template [Type=any]
+ * @param {Type} compared The compared value.
+ * @param {Type} comparee The value compared with.
  * @returns {boolean} True, if and only if the compared is the same value
- * as comparee with -0 and 0 handled as different numbers, and NaN equal to NaN.
+ * as comparee with -0 and +0 handled as different numbers, and NaN equal to NaN.
  */
 
 export function sameValue(compared, comparee) {
